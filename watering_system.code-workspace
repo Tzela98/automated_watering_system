@@ -1,0 +1,12 @@
+{
+	"folders": [
+		{
+			"path": "../LED Blink Test"
+		},
+		{
+			"name": "Automated Watering System",
+			"path": "."
+		}
+	],
+	"settings": {}
+}
