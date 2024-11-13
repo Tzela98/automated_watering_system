@@ -1,77 +1,88 @@
 #include "WebServer.h"
 #include "WiFiManager.h"
-#include "config.h"
+#include "SPIFFS.h"  
+#include "../../include/config.h"
+#include "../../include/globals.h"
 
-// Declare the watering zones as external
-extern std::vector<WateringZone> wateringZones;
 
+MyWebServer::MyWebServer() : server(80) {}
 
-// Constructor to set up the Web Server
-MyWebServer::MyWebServer() : server(80) {   // Initialize the AsyncWebServer on port 80
-}
-
-// Initialize the Web Server
+// Initialize the Web Server and SPIFFS
 void MyWebServer::setup() {
-    // Call the WiFi setup from WiFiManager
+    Serial.println("Starting setup...");
+    
+    Serial.println("Starting SPIFFS...");
+    if (!SPIFFS.begin()) {
+        Serial.println("Failed to mount SPIFFS");
+        return;
+    }
+    Serial.println("SPIFFS mounted successfully.");
+
+    Serial.println("Setting up AP...");
     setupAP();
-    Serial.println("Connected to Access Point!");
+    Serial.println("Wi-Fi setup complete.");
 
-    // Set up the server routes
+    Serial.println("Setting up routes...");
     setupRoutes();
+    Serial.println("Routes setup complete.");
 
-    // Start the web server
+    Serial.println("Starting server...");
     server.begin();
-    Serial.println("Web server started!");
+    Serial.println("Web server setup complete!");
 }
 
-// Set up the HTTP routes
+
+// Set up HTTP routes
 void MyWebServer::setupRoutes() {
-    // Serve a simple HTML page for controlling watering zones
-    server.on("/", HTTP_GET, [this](AsyncWebServerRequest *request) {
-        String html = "<html><body>";
-        html += "<h1>Watering Control</h1>";
-        html += "<form action='/water' method='POST'>";
-        html += "<label for='zone'>Select Zone:</label>";
-        html += "<select name='zone' id='zone'>";
-        for (int i = 0; i < wateringZones.size(); i++) {
-            html += "<option value='" + String(i) + "'>Zone " + String(i + 1) + "</option>";
-        }
-        html += "</select>";
-        html += "<input type='submit' value='Water Zone'>";
-        html += "</form>";
-        html += "</body></html>";
-        request->send(200, "text/html", html);
+    // Serve the external HTML file
+    server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
+        request->send(SPIFFS, "/index.html", "text/html");
     });
 
-    // Define a simple route for status
+    // Serve the external CSS file
+    server.on("/style.css", HTTP_GET, [](AsyncWebServerRequest *request) {
+        request->send(SPIFFS, "/style.css", "text/css");
+    });
+
+    // Serve the external JavaScript file
+    server.on("/script.js", HTTP_GET, [](AsyncWebServerRequest *request) {
+        request->send(SPIFFS, "/script.js", "application/javascript");
+    });
+
+    // Define a route for status
     server.on("/status", HTTP_GET, [this](AsyncWebServerRequest *request) {
-        handleStatus();
-        request->send(200, "text/plain", "System is running.");
+        request->send(200, "text/plain", "System is running."); // Or provide dynamic status
     });
 
-    // Define a route for handling watering zone requests
+    // Handle watering zone requests
     server.on("/water", HTTP_POST, [this](AsyncWebServerRequest *request) {
-        int zone = request->arg("zone").toInt(); // Get the zone number from the request
+        int zone = request->arg("zone").toInt();
         if (zone >= 0 && zone < wateringZones.size()) {
-            handleWaterZone(zone); // Call the handleWaterZone method for the specific zone
+            handleWaterZone(zone);
             request->send(200, "text/plain", "Watering zone action performed for Zone " + String(zone + 1) + ".");
         } else {
             request->send(400, "text/plain", "Invalid zone selected.");
         }
     });
+
+    // Define a route to get the list of available zones
+    server.on("/zones", HTTP_GET, [this](AsyncWebServerRequest *request) {
+        String zonesJson = "[";
+
+        // Assuming wateringZones is a vector or list that holds zone objects
+        for (int i = 0; i < wateringZones.size(); i++) {
+            zonesJson += String(i + 1); // Zone numbers, starting from 1
+            if (i < wateringZones.size() - 1) {
+                zonesJson += ","; // Add a comma between zones
+            }
+        }
+
+        zonesJson += "]";
+        request->send(200, "application/json", zonesJson); // Send the zones as JSON
+    });
 }
 
-// Handle status requests
-void MyWebServer::handleStatus() {
-    Serial.println("Handling status request...");
-    // Return the status of the system (e.g., network status, uptime, etc.)
-}
-
-// Handle watering zone requests
 void MyWebServer::handleWaterZone(int zone) {
-    // Activate the specified watering zone
+    // Activate the watering zone
     wateringZones[zone].water();
-
-    // Yield to the watchdog to prevent a timeout
-    delay(0);  // This allows the watchdog to reset the device if needed
 }

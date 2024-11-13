@@ -1,21 +1,25 @@
 #include <Arduino.h>
+#include <vector>
 #include "WebServer.h"
 #include "WateringZone.h"
 #include "WiFiManager.h"
+#include "Globals.h" 
 
 // Define your watering zones
 std::vector<WateringZone> wateringZones;
 
 void setupWateringZones() {
     // Dynamically add watering zones to the vector
-    wateringZones.push_back(WateringZone(3, 10000)); // Zone 1: Pin 23, 10 seconds
-    wateringZones.push_back(WateringZone(4, 15000)); // Zone 2: Pin 24, 15 seconds
-    wateringZones.push_back(WateringZone(5, 12000)); // Zone 3: Pin 25, 12 seconds
-    wateringZones.push_back(WateringZone(6, 8000));  // Zone 4: Pin 26, 8 seconds
+    wateringZones.push_back(WateringZone(23, 10000)); 
+    wateringZones.push_back(WateringZone(22, 15000)); 
+    wateringZones.push_back(WateringZone(21, 12000)); 
+    wateringZones.push_back(WateringZone(19, 8000));  
 
     // Initialize each zone
-    for (auto& zone : wateringZones) {
-        zone.setup();
+    for (size_t i = 0; i < wateringZones.size(); ++i) {
+        Serial.print("Setting up watering zone ");
+        Serial.println(i + 1);
+        wateringZones[i].setup();
     }
 }
 
@@ -39,6 +43,12 @@ void loop() {
     if (millis() - lastPrintTime > 2000) {  // Check every 2 seconds
         checkConnectedDevices();
         lastPrintTime = millis();
+    }
+
+    // Update each watering zone and yield control to prevent blocking
+    for (auto& zone : wateringZones) {
+        zone.update();
+        yield();  // Allows background tasks to run
     }
 }
 

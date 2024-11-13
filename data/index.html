@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Watering Control</title>
+    <link rel="stylesheet" href="/style.css"> <!-- External CSS -->
+</head>
+<body>
+    <h1>Watering Control</h1>
+    <form action="/water" method="POST">
+        <label for="zone">Select Zone:</label>
+        <select name="zone" id="zone">
+            <!-- Options will be added dynamically by the server-side C++ code -->
+        </select>
+        <input type="submit" value="Water Zone">
+    </form>
+
+    <div id="status">System status: unknown</div>
+
+    <script src="/script.js"></script> <!-- External JavaScript -->
+</body>
+</html>
