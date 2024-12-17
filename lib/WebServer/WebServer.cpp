@@ -70,6 +70,7 @@ void MyWebServer::setupRoutes() {
         String zonesJson = "[";
 
         // Assuming wateringZones is a vector or list that holds zone objects
+
         for (int i = 0; i < wateringZones.size(); i++) {
             zonesJson += String(i + 1); // Zone numbers, starting from 1
             if (i < wateringZones.size() - 1) {
