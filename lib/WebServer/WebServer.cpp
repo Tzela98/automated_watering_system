@@ -10,7 +10,6 @@ MyWebServer::MyWebServer() : server(80) {}
 // Initialize the Web Server and SPIFFS
 void MyWebServer::setup() {
     Serial.println("Starting setup...");
-    
     Serial.println("Starting SPIFFS...");
     if (!SPIFFS.begin()) {
         Serial.println("Failed to mount SPIFFS");
@@ -20,15 +19,12 @@ void MyWebServer::setup() {
 
     Serial.println("Setting up AP...");
     setupAP();
-    Serial.println("Wi-Fi setup complete.");
 
     Serial.println("Setting up routes...");
     setupRoutes();
-    Serial.println("Routes setup complete.");
 
     Serial.println("Starting server...");
     server.begin();
-    Serial.println("Web server setup complete!");
 }
 
 
@@ -81,6 +77,33 @@ void MyWebServer::setupRoutes() {
         zonesJson += "]";
         request->send(200, "application/json", zonesJson); // Send the zones as JSON
     });
+
+    // Add schedule route
+    server.on("/add_schedule", HTTP_POST, [this](AsyncWebServerRequest *request) {
+        int zone = request->arg("zone").toInt();
+        int startHour = request->arg("startHour").toInt();
+        int startMinute = request->arg("startMinute").toInt();
+        int duration = request->arg("duration").toInt();
+        String days = request->arg("days");
+        
+        if (zone >= 0 && zone < wateringZones.size()) {
+            WateringSchedule schedule;
+            schedule.startHour = startHour;
+            schedule.startMinute = startMinute;
+            schedule.duration = duration;
+
+            // Parse the days
+            for (int i = 0; i < 7; i++) {
+                schedule.days[i] = days.indexOf(String(i)) != -1;
+            }
+
+            wateringZones[zone].addSchedule(schedule);
+            request->send(200, "text/plain", "Schedule added for Zone " + String(zone + 1));
+        } else {
+            request->send(400, "text/plain", "Invalid zone selected.");
+        }
+    });
+
 }
 
 void MyWebServer::handleWaterZone(int zone) {

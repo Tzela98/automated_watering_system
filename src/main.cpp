@@ -39,6 +39,7 @@ void setup() {
 
 void loop() {
     static unsigned long lastPrintTime = 0; // Keep track of time between checks
+    unsigned long currentMillis = millis();
 
     if (millis() - lastPrintTime > 2000) {  // Check every 2 seconds
         checkConnectedDevices();
@@ -48,7 +49,10 @@ void loop() {
     // Update each watering zone and yield control to prevent blocking
     for (auto& zone : wateringZones) {
         zone.update();
+        zone.checkSchedule();
         yield();  // Allows background tasks to run
     }
+
+    delay(1000); // Delay to prevent excessive loop iterations
 }
 
