@@ -53,6 +53,11 @@ void WateringZone::stopWatering() {
     }
 }
 
+// getter for shedules
+const std::vector<WateringSchedule>& WateringZone::getSchedules() const {
+    return schedules;
+}
+
 // Add a watering schedule
 void WateringZone::addSchedule(const WateringSchedule &schedule) {
     schedules.push_back(schedule);

@@ -104,6 +104,61 @@ void MyWebServer::setupRoutes() {
         }
     });
 
+    // Clear schedule route`
+    server.on("/clear_schedule", HTTP_POST, [this](AsyncWebServerRequest *request) {
+        int zone = request->arg("zone").toInt();
+        if (zone >= 0 && zone < wateringZones.size()) {
+            wateringZones[zone].clearSchedule();
+            request->send(200, "text/plain", "Schedule cleared for Zone " + String(zone + 1));
+        } else {
+            request->send(400, "text/plain", "Invalid zone selected.");
+        }
+    });
+
+    // Get schedule route
+    server.on("/get_schedule", HTTP_GET, [this](AsyncWebServerRequest *request) {
+    if (!request->hasArg("zone")) {
+        request->send(400, "text/plain", "Zone not specified.");
+        return;
+    }
+
+    int zone = request->arg("zone").toInt();
+    if (zone >= 0 && zone < wateringZones.size()) {
+        const auto& schedules = wateringZones[zone].getSchedules();
+        String schedulesJson = "[";
+
+        for (size_t i = 0; i < schedules.size(); i++) {
+            schedulesJson += "{\"startHour\":" + String(schedules[i].startHour) +
+                             ",\"startMinute\":" + String(schedules[i].startMinute) +
+                             ",\"duration\":" + String(schedules[i].duration) + "}";
+            if (i < schedules.size() - 1) {
+                schedulesJson += ",";
+            }
+        }
+
+        schedulesJson += "]";
+        request->send(200, "application/json", schedulesJson);
+    } else {
+        request->send(400, "text/plain", "Invalid zone selected.");
+    }
+});
+
+}
+
+String MyWebServer::daysToString(const bool *days) {
+    const char *dayNames[] = {"Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"};
+    String result = "";
+
+    for (int i = 0; i < 7; ++i) {
+        if (days[i]) {
+            if (!result.isEmpty()) {
+                result += ", ";
+            }
+            result += dayNames[i];
+        }
+    }
+
+    return result.isEmpty() ? "None" : result;
 }
 
 void MyWebServer::handleWaterZone(int zone) {

@@ -12,6 +12,7 @@ class MyWebServer{
     public:
         MyWebServer();          // Constructor to set up the Web Server
         void setup();           // Initialize the Web Server
+        String daysToString(const bool *days); // Convert days to string
 
     private:
         AsyncWebServer server;          // ESP32 Web Server Instance

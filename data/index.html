@@ -1,20 +1,54 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Watering Control</title>
     <link rel="stylesheet" href="/style.css"> <!-- External CSS -->
 </head>
+
 <body>
     <h1>Watering Control</h1>
-    <form action="/water" method="POST">
+
+    <!-- Watering Zone Selection -->
+    <form id="water-zone-form">
         <label for="zone">Select Zone:</label>
         <select name="zone" id="zone">
-            <!-- Options will be added dynamically by the server-side C++ code -->
+            <!-- Options will be dynamically populated -->
         </select>
-        <input type="submit" value="Water Zone">
+        <input type="button" value="Water Zone" id="water-zone-btn">
     </form>
+
+    <!-- Schedule Management -->
+    <h2>Schedule Management</h2>
+    <div id="schedule-section">
+        <h3>Current Schedule</h3>
+        <ul id="schedule-list">
+            <!-- Current schedules will be dynamically populated -->
+        </ul>
+
+        <h3>Add Schedule</h3>
+        <form id="add-schedule-form">
+            <label for="startHour">Start Hour:</label>
+            <input type="number" id="startHour" name="startHour" min="0" max="23" required>
+            <label for="startMinute">Start Minute:</label>
+            <input type="number" id="startMinute" name="startMinute" min="0" max="59" required>
+            <label for="duration">Duration (mins):</label>
+            <input type="number" id="duration" name="duration" min="1" required>
+            <label for="days">Days:</label>
+            <input type="checkbox" name="days" value="0"> Mon
+            <input type="checkbox" name="days" value="1"> Tue
+            <input type="checkbox" name="days" value="2"> Wed
+            <input type="checkbox" name="days" value="3"> Thu
+            <input type="checkbox" name="days" value="4"> Fri
+            <input type="checkbox" name="days" value="5"> Sat
+            <input type="checkbox" name="days" value="6"> Sun
+            <input type="button" value="Add Schedule" id="add-schedule-btn">
+        </form>
+
+        <button id="clear-schedule-btn">Clear Schedule</button>
+    </div>
 
     <div id="status">System status: unknown</div>
 

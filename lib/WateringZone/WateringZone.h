@@ -23,6 +23,9 @@ public:
     void clearSchedule();                 // Clear the watering schedule
     void checkSchedule();                 // Check the watering schedule
 
+    // getter for shedules
+    const std::vector<WateringSchedule>& getSchedules() const;
+
 private:
     int pin;                              // GPIO pin number for the solenoid valve
     int duration;                         // Watering duration in milliseconds
